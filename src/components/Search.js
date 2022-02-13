@@ -4,10 +4,18 @@ import axios from 'axios';
 const Search = () => {
   const [term, setTerm] = useState('flowers');
   const [results, setResults] = useState([]);
+  const requestDelay = 1000;
 
-  const resnderedResults = results.map((result) => {
+  const renderedResults = results.map((result) => {
     return (
       <div key={result.pageid} className="item">
+        <div className="right floated content">
+          <a
+            href={`https://en.wikipedia.org?curid=${result.pageid}`}
+            className="ui button">
+            Go
+          </a>
+        </div>
         <div className="content">
           <div className="header">{result.title}</div>
           <span dangerouslySetInnerHTML={{ __html: result.snippet }}></span>
@@ -30,7 +38,21 @@ const Search = () => {
 
       setResults(data.data.query.search);
     };
-    search();
+
+    if (term && !results.length) {
+      search();
+    } else {
+      const timeoutId = setTimeout(() => {
+        if (term) {
+          search();
+        }
+      }, requestDelay);
+
+      // this is the cleanup function feature of the useEffect hook. NICE.
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
   }, [term]);
 
   return (
@@ -44,7 +66,7 @@ const Search = () => {
           className="input"
         />
       </div>
-      <div className="ui celled list">{resnderedResults}</div>
+      <div className="ui celled list">{renderedResults}</div>
     </div>
   );
 };
